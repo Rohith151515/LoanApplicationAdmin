@@ -1,6 +1,27 @@
+import { useState } from 'react';
 import CashierSidebar from '../components/CashierSidebar';
+import CustomerFormPanel from '../components/CustomerFormPanel';
+import { createCustomer } from '../api/customerApi';
+import { useToast } from '../context/ToastContext';
 
 export default function CashierCollections() {
+  const [customerOpen, setCustomerOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const { notify } = useToast();
+
+  const handleCreateCustomer = async (payload) => {
+    setSubmitting(true);
+    try {
+      await createCustomer(payload);
+      notify('Customer created', 'success');
+      setCustomerOpen(false);
+    } catch (err) {
+      notify(err.message || 'Could not create customer', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="app-shell">
       <CashierSidebar />
@@ -11,7 +32,9 @@ export default function CashierCollections() {
             <h1>Collections</h1>
             <p className="main__subtitle">Track money collected during your shift.</p>
           </div>
-          <span className="cashier-page-icon">◷</span>
+          <button className="btn btn--primary" type="button" onClick={() => setCustomerOpen(true)}>
+            + New customer
+          </button>
         </header>
 
         <section className="stat-grid cashier-stat-grid">
@@ -37,6 +60,12 @@ export default function CashierCollections() {
           <p className="muted">Your collection history will appear here after the collection endpoint is available.</p>
         </section>
       </main>
+      <CustomerFormPanel
+        open={customerOpen}
+        onClose={() => setCustomerOpen(false)}
+        onSubmit={handleCreateCustomer}
+        submitting={submitting}
+      />
     </div>
   );
 }

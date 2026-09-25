@@ -4,9 +4,11 @@ import { Loader, LiveIndicator } from '../components/Loader';
 import StatusBadge, { RoleBadge } from '../components/StatusBadge';
 import UserFormPanel from '../components/UserFormPanel';
 import CashierFormPanel from '../components/CashierFormPanel';
+import CustomerFormPanel from '../components/CustomerFormPanel';
 import usePolling from '../hooks/usePolling';
 import { createUser, getAllUsers, updateUser } from '../api/userApi';
 import { createCashier } from '../api/cashierApi';
+import { createCustomer } from '../api/customerApi';
 import { useToast } from '../context/ToastContext';
 
 export default function Users() {
@@ -17,6 +19,7 @@ export default function Users() {
   const [query, setQuery] = useState('');
   const [panel, setPanel] = useState({ open: false, mode: 'create', user: null });
   const [cashierOpen, setCashierOpen] = useState(false);
+  const [customerOpen, setCustomerOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const users = useMemo(() => (Array.isArray(data) ? data : data?.data || []), [data]);
@@ -41,6 +44,19 @@ export default function Users() {
       setCashierOpen(false);
     } catch (err) {
       notify(err.message || 'Could not create cashier', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCreateCustomer = async (payload) => {
+    setSubmitting(true);
+    try {
+      await createCustomer(payload);
+      notify('Customer created', 'success');
+      setCustomerOpen(false);
+    } catch (err) {
+      notify(err.message || 'Could not create customer', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -97,6 +113,9 @@ export default function Users() {
             </button>
             <button className="btn btn--primary" onClick={() => setCashierOpen(true)} type="button">
               + New cashier
+            </button>
+            <button className="btn btn--primary" onClick={() => setCustomerOpen(true)} type="button">
+              + New customer
             </button>
           </div>
         </section>
@@ -167,6 +186,12 @@ export default function Users() {
         users={users}
         onClose={() => setCashierOpen(false)}
         onSubmit={handleCreateCashier}
+        submitting={submitting}
+      />
+      <CustomerFormPanel
+        open={customerOpen}
+        onClose={() => setCustomerOpen(false)}
+        onSubmit={handleCreateCustomer}
         submitting={submitting}
       />
     </div>

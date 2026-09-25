@@ -13,7 +13,8 @@ const axiosClient = axios.create({
 // Attach the auth token (if present) to every outgoing request.
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');
-  if (token) {
+  const isPublicAuthRequest = ['/auth/login', '/auth/register'].some((path) => config.url?.endsWith(path));
+  if (token && !isPublicAuthRequest) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
